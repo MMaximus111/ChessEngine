@@ -2,7 +2,7 @@
 
 namespace ChessEngine.Entities;
 
-public class Square
+public sealed class Square
 {
     public Square(Location location, Piece? piece)
     {
@@ -12,7 +12,7 @@ public class Square
 
     public Location Location { get; }
     
-    public Piece? Piece { get; set; }
+    public Piece? Piece { get; private set; }
     
     public void Clear()
     {

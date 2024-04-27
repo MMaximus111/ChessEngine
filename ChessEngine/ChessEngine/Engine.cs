@@ -1,11 +1,16 @@
 ﻿using ChessEngine.Entities;
+using ChessEngine.Helpers;
 
 namespace ChessEngine;
 
 public class Engine
 {
+    private long _evaluationCount;
+
     public decimal Evaluate(Board board)
     {
+        Interlocked.Increment(ref _evaluationCount);
+        
         if (board.CurrentMoveColor == PieceColor.Black)
         {
             if (board.IsKingInCheckmate(board.CurrentMoveColor))
@@ -31,19 +36,19 @@ public class Engine
         Move? firstValidMove = null;
         decimal bestScore = 0;
         object lockObject = new object();
-
+        
         Move[] allPossibleMoves = board.GetAllPossibleMoves().ToArray();
-
+        
         if (allPossibleMoves.Any())
         {
             Parallel.ForEach(board.GetAllPossibleMoves(), new ParallelOptions() { MaxDegreeOfParallelism = allPossibleMoves.Length }, (move) =>
             {
                 Board boardCopy = board.DeepCopy();
-
+        
                 boardCopy.Move(move);
-
+        
                 decimal score = Minimax(boardCopy, depth - 1, decimal.MinValue, decimal.MaxValue, false);
-
+        
                 lock (lockObject)
                 {
                     firstValidMove ??= move;
@@ -94,89 +99,94 @@ public class Engine
         }
 
         decimal value;
-       object lockObject = new object();
+       //object lockObject = new object();
 
-       // var allPossibleMoves = board.GetAllPossibleMoves().ToArray();
+       IEnumerable<Move> allPossibleMoves = board.GetAllPossibleMoves();
        
         if (isMaximizingPlayer)
         {
             value = decimal.MinValue;
 
-            // foreach (Move possibleMove in allPossibleMoves)
-            // {
-            //     Board boardCopy = board.DeepCopy();
-            //     boardCopy.Move(possibleMove);
-            //
-            //     decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, false);
-            //
-            //     value = Math.Max(value, eval);
-            //     alpha = Math.Max(alpha, eval);
-            //
-            //     if (beta <= alpha)
-            //     {
-            //         break;
-            //     }
-            // }
-            
-            Parallel.ForEach(board.GetAllPossibleMoves(), (move, parallelLoopState) =>
+            foreach (Move possibleMove in allPossibleMoves)
             {
                 Board boardCopy = board.DeepCopy();
-                boardCopy.Move(move);
+
+                boardCopy.Move(possibleMove);
             
                 decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, false);
             
-                lock (lockObject)
-                {
-                    value = Math.Max(value, eval);
-                    alpha = Math.Max(alpha, eval);
-                }
+                value = Math.Max(value, eval);
+                alpha = Math.Max(alpha, eval);
             
                 if (beta <= alpha)
                 {
-                    parallelLoopState.Break();
+                    break;
                 }
-            });
+            }
+            
+            // Parallel.ForEach(board.GetAllPossibleMoves(), (move, parallelLoopState) =>
+            // {
+            //     Board boardCopy = board.DeepCopy();
+            //     boardCopy.Move(move);
+            //
+            //     decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, false);
+            //
+            //     lock (lockObject)
+            //     {
+            //         value = Math.Max(value, eval);
+            //         alpha = Math.Max(alpha, eval);
+            //     }
+            //
+            //     if (beta <= alpha)
+            //     {
+            //         parallelLoopState.Break();
+            //     }
+            // });
 
             return value;
         }
 
         value = decimal.MaxValue;
 
-        // foreach (Move possibleMove in allPossibleMoves)
-        // {
-        //     Board boardCopy = board.DeepCopy();
-        //     boardCopy.Move(possibleMove);
-        //
-        //     decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, true);
-        //
-        //     value = Math.Min(value, eval);
-        //     beta = Math.Min(beta, eval);
-        //
-        //     if (beta <= alpha)
-        //     {
-        //         break;
-        //     }
-        // }
-        
-        Parallel.ForEach(board.GetAllPossibleMoves(), (move, parallelLoopState) =>
+        foreach (Move possibleMove in allPossibleMoves)
         {
             Board boardCopy = board.DeepCopy();
-            boardCopy.Move(move);
+
+            boardCopy.Move(possibleMove);
         
             decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, true);
         
-            lock (lockObject)
-            {
-                value = Math.Min(value, eval);
-                beta = Math.Min(beta, eval);
-            }
+            value = Math.Min(value, eval);
+
+            beta = Math.Min(beta, eval);
         
             if (beta <= alpha)
             {
-                parallelLoopState.Break();
+                break;
             }
-        });
+        }
+        
+        // Parallel.ForEach(board.GetAllPossibleMoves(), (move, parallelLoopState) =>
+        // {
+        //     Board boardCopy = board.DeepCopy();
+        //     boardCopy.Move(move);
+        //
+        //     decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, true);
+        //
+        //     lock (lockObject)
+        //     {
+        //         value = Math.Min(value, eval);
+        //         beta = Math.Min(beta, eval);
+        //     }
+        //
+        //     if (beta <= alpha)
+        //     {
+        //         parallelLoopState.Break();
+        //     }
+        // });
 
         return value;
     }
+
+    public long GetEvaluationsCount() => _evaluationCount;
 }

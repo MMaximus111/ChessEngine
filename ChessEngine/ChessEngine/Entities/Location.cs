@@ -2,22 +2,22 @@
 
 public readonly struct Location
 {
-    public Location(int x, int y)
+    public Location(byte x, byte y)
     {
         X = x;
         Y = y;
     }
 
-    public int X { get; init; }
+    public byte X { get; }
 
-    public int Y { get; init; }
+    public byte Y { get; }
 
     public override string ToString()
     {
         return $"{GetLetterFromX()}{Y}";
     }
 
-    public string GetLetterFromX()
+    private string GetLetterFromX()
     {
         return X switch
         {

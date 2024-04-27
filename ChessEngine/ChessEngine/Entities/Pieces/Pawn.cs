@@ -3,8 +3,6 @@
 public abstract class Pawn : Piece
 {
     public override byte Price { get; } = 1;
-
-    public override string Name { get; } = "P";
     
     public override IEnumerable<Location> GetValidLocationsToMove(Location currentLocation, Board board, bool checkForCheck)
     {
@@ -12,7 +10,7 @@ public abstract class Pawn : Piece
         int direction = Color == PieceColor.White ? 1 : -1;
 
         // Check the square directly in front of the pawn
-        Location frontLocation = new Location(currentLocation.X, currentLocation.Y + direction);
+        Location frontLocation = new Location(currentLocation.X, (byte)(currentLocation.Y + direction));
 
         if (Board.IsLocationOnBoard(frontLocation) && board.GetSquare(frontLocation).Piece == null)
         {
@@ -24,7 +22,7 @@ public abstract class Pawn : Piece
             // Check if the pawn is on its initial position and the square two steps ahead is free
             if ((Color == PieceColor.White && currentLocation.Y == 2) || (Color == PieceColor.Black && currentLocation.Y == 7))
             {
-                Location twoStepsAheadLocation = new Location(currentLocation.X, currentLocation.Y + 2 * direction);
+                Location twoStepsAheadLocation = new Location(currentLocation.X, (byte)(currentLocation.Y + 2 * direction));
 
                 if (Board.IsLocationOnBoard(twoStepsAheadLocation) && board.GetSquare(twoStepsAheadLocation).Piece == null)
                 {
@@ -39,8 +37,8 @@ public abstract class Pawn : Piece
         // Check the squares diagonally in front of the pawn for opponent's pieces
         Location[] diagonalLocations = new Location[]
         {
-            new Location(currentLocation.X - 1, currentLocation.Y + direction),
-            new Location(currentLocation.X + 1, currentLocation.Y + direction)
+            new Location((byte)(currentLocation.X - 1), (byte)(currentLocation.Y + direction)),
+            new Location((byte)(currentLocation.X + 1), (byte)(currentLocation.Y + direction))
         };
 
         foreach (Location diagonalLocation in diagonalLocations)

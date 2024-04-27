@@ -16,7 +16,7 @@ public class Board
        {
            for (byte j = 0; j < 8; j++)
            {
-               Location location = new Location((i + 1), (j + 1));
+               Location location = new Location((byte)(i + 1), (byte)(j + 1));
 
                Piece? piece = null;
 
@@ -62,35 +62,35 @@ public class Board
 
     public Square[,] Squares { get; }
     
-    public void Move(string notation)
-    {
-        if (notation.Length != 3)
-        {
-            throw new ArgumentException("Invalid notation.");
-        }
-
-        char pieceName = notation[0];
-        int x = GetXBasedOnLeter(notation[1]);
-        int y = notation[2] - '0';
-
-        Location to = new Location(x, y);
-
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                Piece? piece = Squares[j, i].Piece;
-
-                if (piece != null && string.Equals(piece.Name[0].ToString(), pieceName.ToString(), StringComparison.OrdinalIgnoreCase) && piece.GetValidLocationsToMove(Squares[j, i].Location, this, true).Contains(to))
-                {
-                    Move(new Move(Squares[j, i].Location, to, piece));
-                    return;
-                }
-            }
-        }
-
-        throw new InvalidOperationException("No valid move found for the given notation.");
-    }
+    // public void Move(string notation)
+    // {
+    //     if (notation.Length != 3)
+    //     {
+    //         throw new ArgumentException("Invalid notation.");
+    //     }
+    //
+    //     char pieceName = notation[0];
+    //     int x = GetXBasedOnLeter(notation[1]);
+    //     int y = notation[2] - '0';
+    //
+    //     Location to = new Location(x, y);
+    //
+    //     for (int i = 0; i < 8; i++)
+    //     {
+    //         for (int j = 0; j < 8; j++)
+    //         {
+    //             Piece? piece = Squares[j, i].Piece;
+    //
+    //             if (piece != null && string.Equals(piece.Name[0].ToString(), pieceName.ToString(), StringComparison.OrdinalIgnoreCase) && piece.GetValidLocationsToMove(Squares[j, i].Location, this, true).Contains(to))
+    //             {
+    //                 Move(new Move(Squares[j, i].Location, to, piece));
+    //                 return;
+    //             }
+    //         }
+    //     }
+    //
+    //     throw new InvalidOperationException("No valid move found for the given notation.");
+    // }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsKingInCheck(PieceColor kingColor)
@@ -140,9 +140,9 @@ public class Board
 
             if (piece != null && piece.Color == CurrentMoveColor)
             {
-                foreach (Move validMove in piece.GetValidLocationsToMove(square.Location, this, true).Select(location => new Move(square.Location, location, piece)))
+                foreach (Location location in piece.GetValidLocationsToMove(square.Location, this, true))
                 {
-                    yield return validMove;
+                    yield return new Move(square.Location, location, piece.Icon);
                 }
             }
         }
@@ -222,7 +222,7 @@ public class Board
     
                 if (piece != null)
                 {
-                    string symbol = piece.Icon;
+                    char symbol = piece.Icon;
                     boardString.Append(symbol);
                     boardString.Append(' ');
                 }
@@ -274,19 +274,19 @@ public class Board
         return newBoard;
     }
     
-    private static int GetXBasedOnLeter(char letter)
-    {
-        return char.ToLower(letter) switch
-        {
-            'a' => 1,
-            'b' => 2,
-            'c' => 3,
-            'd' => 4,
-            'e' => 5,
-            'f' => 6,
-            'g' => 7,
-            'h' => 8,
-            _ => throw new ArgumentOutOfRangeException("Invalid letter.")
-        };
-    }
+    // private static int GetXBasedOnLeter(char letter)
+    // {
+    //     return char.ToLower(letter) switch
+    //     {
+    //         'a' => 1,
+    //         'b' => 2,
+    //         'c' => 3,
+    //         'd' => 4,
+    //         'e' => 5,
+    //         'f' => 6,
+    //         'g' => 7,
+    //         'h' => 8,
+    //         _ => throw new ArgumentOutOfRangeException("Invalid letter.")
+    //     };
+    // }
 }

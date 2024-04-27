@@ -24,7 +24,8 @@ while (true)
     
     Console.WriteLine($"Engine move: {bestMove}");
     Console.WriteLine($"Score: {engine.Evaluate(board)}");
-    Console.WriteLine($"Elapsed: {sw.ElapsedMilliseconds} ms");
+    Console.WriteLine($"Elapsed: {sw.Elapsed.Seconds} s");
+    Console.WriteLine($"Evaluations: {engine.GetEvaluationsCount()}");
     
     Console.WriteLine(board);
     

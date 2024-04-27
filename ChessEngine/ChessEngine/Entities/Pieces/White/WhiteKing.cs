@@ -1,10 +1,10 @@
 ﻿namespace ChessEngine.Entities.Pieces.White;
 
-public class WhiteKing : King
+public sealed class WhiteKing : King
 {
     public override PieceColor Color { get; } = PieceColor.White;
 
-    public override string Icon { get; } = "♚";
+    public override char Icon { get; } = '♚';
     public override Piece DeepCopy()
     {
         return new WhiteKing();

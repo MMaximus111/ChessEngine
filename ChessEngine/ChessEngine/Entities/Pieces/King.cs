@@ -4,8 +4,6 @@ public abstract class King : Piece
 {
     public override byte Price { get; } = 100;
 
-    public override string Name { get; } = "K";
-
     private static readonly int[][] Directions = new int[][]
     {
         new int[] { 1, 0 }, new int[] { -1, 0 }, new int[] { 0, 1 }, new int[] { 0, -1 },
@@ -16,8 +14,8 @@ public abstract class King : Piece
     {
         foreach (int[] direction in Directions)
         {
-            int newX = currentLocation.X + direction[0];
-            int newY = currentLocation.Y + direction[1];
+            byte newX = (byte)(currentLocation.X + direction[0]);
+            byte newY = (byte)(currentLocation.Y + direction[1]);
 
             Location newLocation = new Location(newX, newY);
             

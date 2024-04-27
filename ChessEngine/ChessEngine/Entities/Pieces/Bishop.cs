@@ -9,16 +9,14 @@ public abstract class Bishop : Piece
     
     public override byte Price { get; } = 3;
 
-    public override string Name { get; } = "Bishop";
-
     public override IEnumerable<Location> GetValidLocationsToMove(Location currentLocation, Board board, bool checkForCheck)
     {
         foreach (int[] direction in Directions)
         {
             for (int i = 1; i < 8; i++)
             {
-                int newX = currentLocation.X + direction[0] * i;
-                int newY = currentLocation.Y + direction[1] * i;
+                byte newX = (byte)(currentLocation.X + direction[0] * i);
+                byte newY = (byte)(currentLocation.Y + direction[1] * i);
 
                 Location newLocation = new Location(newX, newY);
                 

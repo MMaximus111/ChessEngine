@@ -10,21 +10,16 @@ public abstract class Queen : Piece
 
     public override byte Price { get; } = 9;
 
-    public override string Name { get; } = "Q";
-
     public override IEnumerable<Location> GetValidLocationsToMove(Location currentLocation, Board board, bool checkForCheck)
     {
         foreach (int[] direction in Directions)
         {
             for (byte i = 1; i < 8; i++)
             {
-                int newX = currentLocation.X + direction[0] * i;
-                int newY = currentLocation.Y + direction[1] * i;
-
-                if (newX > 0 && newX <= 8 && newY > 0 && newY <= 8)
+                Location newLocation = new Location((byte)(currentLocation.X + direction[0] * i), (byte)(currentLocation.Y + direction[1] * i));
+                
+                if (Board.IsLocationOnBoard(newLocation))
                 {
-                    Location newLocation = new Location(newX, newY);
-
                     Square targetSquare = board.GetSquare(newLocation);
 
                     // Check if the target square is empty or contains an opponent's piece
