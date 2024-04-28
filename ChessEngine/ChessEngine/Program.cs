@@ -5,7 +5,7 @@ using ChessEngine.Entities;
 
 Console.OutputEncoding = Encoding.UTF8;
 
-Board board = new Board();
+Board board = new Board(false);
 
 Console.WriteLine("Welcome to the Chess Engine!");
 
@@ -18,7 +18,7 @@ while (true)
         
     Stopwatch sw = Stopwatch.StartNew();
     
-    Move bestMove = engine.MakeTheBestMove(board, 7);
+    Move bestMove = engine.MakeTheBestMove(board, 6);
 
     sw.Stop();
     

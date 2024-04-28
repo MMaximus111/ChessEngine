@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using ChessEngine.Entities;
+using ChessEngine.Entities.Pieces;
 using ChessEngine.Helpers;
 
 namespace ChessEngine;

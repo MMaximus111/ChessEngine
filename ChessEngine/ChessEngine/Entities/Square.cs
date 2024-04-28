@@ -2,25 +2,25 @@
 
 namespace ChessEngine.Entities;
 
-public sealed class Square
+public struct Square
 {
-    public Square(Location location, Piece? piece)
+    public Square(Location location, byte? pieceId)
     {
         Location = location;
-        Piece = piece;
+        PieceId = pieceId;
     }
 
     public Location Location { get; }
     
-    public Piece? Piece { get; private set; }
+    public byte? PieceId { get; private set; }
     
     public void Clear()
     {
-        Piece = null;
+        PieceId = null;
     }
     
-    public void SetPiece(Piece piece)
+    public void SetPiece(byte? pieceId)
     {
-        Piece = piece;
+        PieceId = pieceId;
     }
 }

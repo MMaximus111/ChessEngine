@@ -1,8 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Text;
+using ChessEngine.Dictionaries;
 using ChessEngine.Entities.Pieces;
-using ChessEngine.Entities.Pieces.Black;
-using ChessEngine.Entities.Pieces.White;
+using ChessEngine.Helpers;
 
 namespace ChessEngine.Entities;
 
@@ -18,30 +18,30 @@ public class Board
            {
                Location location = new Location((byte)(i + 1), (byte)(j + 1));
 
-               Piece? piece = null;
+               byte? pieceId = null;
 
                if (!empty)
                {
-                   piece = location switch
+                   pieceId = location switch
                    {
-                       { X: 1, Y: 1 } => new WhiteRook(),
-                       { X: 2, Y: 1 } => new WhiteKnight(),
-                       { X: 3, Y: 1 } => new WhiteBishop(),
-                       { X: 4, Y: 1 } => new WhiteQueen(),
-                       { X: 5, Y: 1 } => new WhiteKing(),
-                       { X: 6, Y: 1 } => new WhiteBishop(),
-                       { X: 7, Y: 1 } => new WhiteKnight(),
-                       { X: 8, Y: 1 } => new WhiteRook(),
-                       { Y: 2 } => new WhitePawn(),
-                       { Y: 7 } => new BlackPawn(),
-                       { X: 1, Y: 8 } => new BlackRook(),
-                       { X: 2, Y: 8 } => new BlackKnight(),
-                       { X: 3, Y: 8 } => new BlackBishop(),
-                       { X: 4, Y: 8 } => new BlackQueen(),
-                       { X: 5, Y: 8 } => new BlackKing(),
-                       { X: 6, Y: 8 } => new BlackBishop(),
-                       { X: 7, Y: 8 } => new BlackKnight(),
-                       { X: 8, Y: 8 } => new BlackRook(),
+                       { X: 1, Y: 1 } => ChessDictionary.WhitePawnId,
+                       { X: 2, Y: 1 } => ChessDictionary.WhiteKnightId,
+                       { X: 3, Y: 1 } => ChessDictionary.WhiteBishopId,
+                       { X: 4, Y: 1 } => ChessDictionary.WhiteQueenId,
+                       { X: 5, Y: 1 } => ChessDictionary.WhiteKingId,
+                       { X: 6, Y: 1 } => ChessDictionary.WhiteBishopId,
+                       { X: 7, Y: 1 } => ChessDictionary.WhiteKnightId,
+                       { X: 8, Y: 1 } => ChessDictionary.WhiteRookId,
+                       { Y: 2 } => ChessDictionary.WhitePawnId,
+                       { Y: 7 } => ChessDictionary.BlackPawnId,
+                       { X: 1, Y: 8 } => ChessDictionary.BlackRookId,
+                       { X: 2, Y: 8 } => ChessDictionary.BlackKnightId,
+                       { X: 3, Y: 8 } => ChessDictionary.BlackBishopId,
+                       { X: 4, Y: 8 } => ChessDictionary.BlackQueenId,
+                       { X: 5, Y: 8 } => ChessDictionary.BlackKingId,
+                       { X: 6, Y: 8 } => ChessDictionary.BlackBishopId,
+                       { X: 7, Y: 8 } => ChessDictionary.BlackKnightId,
+                       { X: 8, Y: 8 } => ChessDictionary.BlackRookId,
                        _ => null
                    };
                    
@@ -49,7 +49,7 @@ public class Board
                    BlackKingSquare = GetSquare(new Location(5, 8));
                }
 
-               Squares[i, j] = new Square(location, piece);
+               Squares[i, j] = new Square(location, pieceId);
            }
        }
    }
@@ -65,36 +65,6 @@ public class Board
     public byte BlackPiecesPrice { get; private set; } = 39;
 
     public Square[,] Squares { get; }
-    
-    // public void Move(string notation)
-    // {
-    //     if (notation.Length != 3)
-    //     {
-    //         throw new ArgumentException("Invalid notation.");
-    //     }
-    //
-    //     char pieceName = notation[0];
-    //     int x = GetXBasedOnLeter(notation[1]);
-    //     int y = notation[2] - '0';
-    //
-    //     Location to = new Location(x, y);
-    //
-    //     for (int i = 0; i < 8; i++)
-    //     {
-    //         for (int j = 0; j < 8; j++)
-    //         {
-    //             Piece? piece = Squares[j, i].Piece;
-    //
-    //             if (piece != null && string.Equals(piece.Name[0].ToString(), pieceName.ToString(), StringComparison.OrdinalIgnoreCase) && piece.GetValidLocationsToMove(Squares[j, i].Location, this, true).Contains(to))
-    //             {
-    //                 Move(new Move(Squares[j, i].Location, to, piece));
-    //                 return;
-    //             }
-    //         }
-    //     }
-    //
-    //     throw new InvalidOperationException("No valid move found for the given notation.");
-    // }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsKingInCheck(PieceColor kingColor)
@@ -111,13 +81,13 @@ public class Board
             for (byte j = 0; j < 8; j++)
             {
                 Square square = Squares[i, j];
-                Piece? piece = square.Piece;
+                byte? pieceId = square.PieceId;
         
-                if (piece != null && piece.Color != kingColor && piece is not King)
+                if (pieceId != null && ChessDictionary.GetColorByPieceId(pieceId.Value) != kingColor && pieceId != ChessDictionary.WhiteKingId && pieceId != ChessDictionary.BlackKingId)
                 {
-                    foreach (Move move in piece.GetValidMovements(square.Location, this, false))
+                    foreach (Move move in MoveHelper.GetValidMovements(pieceId.Value, square.Location, this, false))
                     {
-                        if (move.To.Equals(kingSquare.Location))
+                        if (move.To.Equals(kingSquare.Value.Location))
                         {
                             return true;
                         }
@@ -140,11 +110,11 @@ public class Board
     {
         foreach (Square square in Squares)
         {
-            Piece? piece = square.Piece;
+            byte? pieceId = square.PieceId;
 
-            if (piece != null && piece.Color == CurrentMoveColor)
+            if (pieceId != null && ChessDictionary.GetColorByPieceId(pieceId.Value) == CurrentMoveColor)
             {
-                foreach (Move move in piece.GetValidMovements(square.Location, this, true))
+                foreach (Move move in MoveHelper.GetValidMovements(pieceId.Value, square.Location, this, true))
                 {
                     yield return move;
                 }
@@ -167,38 +137,76 @@ public class Board
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Move(Move move)
     {
-        Square fromSquare = GetSquare(move.From);
-        Square toSquare = GetSquare(move.To);
+        byte fromX = (byte)(move.From.X - 1);
+        byte fromY = (byte)(move.From.Y - 1);
+        byte toX = (byte)(move.To.X - 1);
+        byte toY = (byte)(move.To.Y - 1);
 
-        if (toSquare.Piece is not null)
+        if (Squares[toX, toY].PieceId is not null)
         {
             if (CurrentMoveColor == PieceColor.White)
             {
-                BlackPiecesPrice -= toSquare.Piece.Price;
+                BlackPiecesPrice -= ChessDictionary.PiecePrices[Squares[toX, toY].PieceId!.Value];
             }
             else
             {
-                WhitePiecesPrice -= toSquare.Piece.Price;
+                WhitePiecesPrice -= ChessDictionary.PiecePrices[Squares[toX, toY].PieceId!.Value];
             }
         }
-        
-        toSquare.SetPiece(fromSquare.Piece!);
-        fromSquare.Clear();
-        
+
+        Squares[toX, toY].SetPiece(Squares[fromX, fromY].PieceId);
+        Squares[fromX, fromY].Clear();
+
         CurrentMoveColor = CurrentMoveColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
-        
-        if (toSquare.Piece is King king)
+
+        if (Squares[toX, toY].PieceId is ChessDictionary.WhiteKingId or ChessDictionary.BlackKingId)
         {
-            if (king.Color == PieceColor.White)
+            if (Squares[toX, toY].PieceId == ChessDictionary.WhiteKingId)
             {
-                WhiteKingSquare = toSquare;
+                WhiteKingSquare = Squares[toX, toY];
             }
             else
             {
-                BlackKingSquare = toSquare;
+                BlackKingSquare = Squares[toX, toY];
             }
         }
     }
+    
+    // [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    // public void Move(Move move)
+    // {
+    //     Square fromSquare = GetSquare(move.From);
+    //     Square toSquare = GetSquare(move.To);
+    //
+    //     if (toSquare.PieceId is not null)
+    //     {
+    //         if (CurrentMoveColor == PieceColor.White)
+    //         {
+    //             BlackPiecesPrice -= ChessDictionary.PiecePrices[toSquare.PieceId.Value];
+    //         }
+    //         else
+    //         {
+    //             WhitePiecesPrice -= ChessDictionary.PiecePrices[toSquare.PieceId.Value];
+    //         }
+    //     }
+    //     
+    //     toSquare.SetPiece(fromSquare.PieceId);
+    //     fromSquare.Clear();
+    //     
+    //     CurrentMoveColor = CurrentMoveColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
+    //     
+    //     if (toSquare.PieceId is ChessDictionary.WhiteKingId or ChessDictionary.BlackKingId)
+    //     {
+    //         if (toSquare.PieceId == ChessDictionary.WhiteKingId)
+    //         {
+    //             WhiteKingSquare = toSquare;
+    //         }
+    //         else
+    //         {
+    //             BlackKingSquare = toSquare;
+    //         }
+    //     }
+    // }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public decimal GetPiecesPrice(PieceColor color)
@@ -218,13 +226,13 @@ public class Board
         {
             for (int j = 0; j < 8; j++)
             {
-                Piece? piece = Squares[j, i].Piece;
+                byte? pieceId = Squares[j, i].PieceId;
     
                 boardString.Append(verticalSeparator);
     
-                if (piece != null)
+                if (pieceId != null)
                 {
-                    char symbol = piece.Icon;
+                    char symbol = ChessDictionary.PieceNames[pieceId.Value];
                     boardString.Append(symbol);
                     boardString.Append(' ');
                 }
@@ -264,9 +272,9 @@ public class Board
         {
             for (byte j = 0; j < 8; j++)
             {
-                if (Squares[i, j].Piece != null)
+                if (Squares[i, j].PieceId != null)
                 {
-                    newBoard.Squares[i, j].SetPiece(Squares[i, j].Piece!.DeepCopy());
+                    newBoard.Squares[i, j].SetPiece(Squares[i, j].PieceId!.Value);
                 }
             }
         }
@@ -277,20 +285,4 @@ public class Board
 
         return newBoard;
     }
-    
-    // private static int GetXBasedOnLeter(char letter)
-    // {
-    //     return char.ToLower(letter) switch
-    //     {
-    //         'a' => 1,
-    //         'b' => 2,
-    //         'c' => 3,
-    //         'd' => 4,
-    //         'e' => 5,
-    //         'f' => 6,
-    //         'g' => 7,
-    //         'h' => 8,
-    //         _ => throw new ArgumentOutOfRangeException("Invalid letter.")
-    //     };
-    // }
 }
