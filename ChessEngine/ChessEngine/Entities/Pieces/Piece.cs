@@ -9,8 +9,8 @@ public abstract class Piece
     public abstract byte Price { get; }
     
     public abstract char Icon { get; }
-    
-    public abstract IEnumerable<Location> GetValidLocationsToMove(Location currentLocation, Board board, bool checkForCheck);
+
+    public abstract IEnumerable<Move> GetValidMovements(Location currentLocation, Board board, bool checkForCheck);
 
     public abstract Piece DeepCopy();
 
@@ -19,7 +19,7 @@ public abstract class Piece
     {
         Board testBoard = board.DeepCopy();
     
-        testBoard.Move(new Move(currentLocation, possibleLocation, Icon));
+        testBoard.Move(new Move(currentLocation, possibleLocation, Icon, 0));
     
         if (testBoard.IsKingInCheck(Color))
         {

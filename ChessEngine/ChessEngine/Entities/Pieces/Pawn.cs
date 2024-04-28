@@ -4,7 +4,7 @@ public abstract class Pawn : Piece
 {
     public override byte Price { get; } = 1;
     
-    public override IEnumerable<Location> GetValidLocationsToMove(Location currentLocation, Board board, bool checkForCheck)
+    public override IEnumerable<Move> GetValidMovements(Location currentLocation, Board board, bool checkForCheck)
     {
         // Determine the direction of movement based on the color of the pawn
         int direction = Color == PieceColor.White ? 1 : -1;
@@ -16,7 +16,7 @@ public abstract class Pawn : Piece
         {
             if (!checkForCheck || !AnyChecks(currentLocation, frontLocation, board))
             {
-                yield return frontLocation;
+                yield return new Move(currentLocation, frontLocation, Icon, 0);
             }
     
             // Check if the pawn is on its initial position and the square two steps ahead is free
@@ -28,7 +28,7 @@ public abstract class Pawn : Piece
                 {
                     if (!checkForCheck || !AnyChecks(currentLocation, twoStepsAheadLocation, board))
                     {
-                        yield return twoStepsAheadLocation;
+                        yield return new Move(currentLocation, frontLocation, Icon, MovePriority.Default);
                     }
                 }
             }
@@ -47,11 +47,11 @@ public abstract class Pawn : Piece
             {
                 Piece? targetPiece = board.GetSquare(diagonalLocation).Piece;
     
-                if (targetPiece != null && targetPiece.Color != this.Color)
+                if (targetPiece != null && targetPiece.Color != Color)
                 {
                     if (!checkForCheck || !AnyChecks(currentLocation, diagonalLocation, board))
                     {
-                        yield return diagonalLocation;
+                        yield return new Move(currentLocation, frontLocation, Icon, MovePriority.PieceCapture);
                     }
                 }
             }

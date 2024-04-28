@@ -6,7 +6,7 @@ public abstract class Knight : Piece
 {
     public override byte Price { get; } = 3;
 
-    public override IEnumerable<Location> GetValidLocationsToMove(Location currentLocation, Board board, bool checkForCheck)
+    public override IEnumerable<Move> GetValidMovements(Location currentLocation, Board board, bool checkForCheck)
     {
         Location[][] locationLines = AllPossibleMoves.Knight[currentLocation];
 
@@ -20,7 +20,7 @@ public abstract class Knight : Piece
                 {
                     if (!checkForCheck || !AnyChecks(currentLocation, newLocation, board))
                     {
-                        yield return newLocation;
+                        yield return new Move(currentLocation, newLocation, Icon, targetSquare.Piece == null ? MovePriority.Default : MovePriority.PieceCapture);
                     }
                 }
             }

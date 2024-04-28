@@ -6,7 +6,7 @@ public abstract class Bishop : Piece
 {
     public override byte Price { get; } = 3;
 
-    public override IEnumerable<Location> GetValidLocationsToMove(Location currentLocation, Board board, bool checkForCheck)
+    public override IEnumerable<Move> GetValidMovements(Location currentLocation, Board board, bool checkForCheck)
     {
         Location[][] locationLines = AllPossibleMoves.Bishop[currentLocation];
         
@@ -20,7 +20,7 @@ public abstract class Bishop : Piece
                 {
                     if (!checkForCheck || !AnyChecks(currentLocation, newLocation, board))
                     {
-                        yield return newLocation;
+                        yield return new Move(currentLocation, newLocation, Icon, MovePriority.Default);
                     }
                 }
                 else
@@ -29,7 +29,7 @@ public abstract class Bishop : Piece
                     {
                         if (!checkForCheck || !AnyChecks(currentLocation, newLocation, board))
                         {
-                            yield return newLocation;
+                            yield return new Move(currentLocation, newLocation, Icon, MovePriority.PieceCapture);
                         }
                     }
 

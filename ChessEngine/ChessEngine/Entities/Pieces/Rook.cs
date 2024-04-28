@@ -5,10 +5,8 @@ namespace ChessEngine.Entities.Pieces;
 public abstract class Rook : Piece
 {
     public override byte Price { get; } = 5;
-    
-    //private static readonly int[][] Directions = new int[][] { new int[] { -1, 0 }, new int[] { 1, 0 }, new int[] { 0, -1 }, new int[] { 0, 1 } };
 
-    public override IEnumerable<Location> GetValidLocationsToMove(Location currentLocation, Board board, bool checkForCheck)
+    public override IEnumerable<Move> GetValidMovements(Location currentLocation, Board board, bool checkForCheck)
     {
         Location[][] locationLines = AllPossibleMoves.Rook[currentLocation];
         
@@ -22,7 +20,7 @@ public abstract class Rook : Piece
                 {
                     if (!checkForCheck || !AnyChecks(currentLocation, newLocation, board))
                     {
-                        yield return newLocation;
+                        yield return new Move(currentLocation, newLocation, Icon, MovePriority.Default);
                     }
                 }
                 else
@@ -31,7 +29,7 @@ public abstract class Rook : Piece
                     {
                         if (!checkForCheck || !AnyChecks(currentLocation, newLocation, board))
                         {
-                            yield return newLocation;
+                            yield return new Move(currentLocation, newLocation, Icon, MovePriority.PieceCapture);
                         }
                     }
 

@@ -6,7 +6,7 @@ public abstract class Queen : Piece
 {
     public override byte Price { get; } = 9;
 
-    public override IEnumerable<Location> GetValidLocationsToMove(Location currentLocation, Board board, bool checkForCheck)
+    public override IEnumerable<Move> GetValidMovements(Location currentLocation, Board board, bool checkForCheck)
     {
         Location[][] locationLines = AllPossibleMoves.Queen[currentLocation];
 
@@ -20,7 +20,7 @@ public abstract class Queen : Piece
                 {
                     if (!checkForCheck || !AnyChecks(currentLocation, location, board))
                     {
-                        yield return location;
+                        yield return new Move(currentLocation, location, Icon, MovePriority.Default);
                     }
                 }
                 else
@@ -29,7 +29,7 @@ public abstract class Queen : Piece
                     {
                         if (!checkForCheck || !AnyChecks(currentLocation, location, board))
                         {
-                            yield return location;
+                            yield return new Move(currentLocation, location, Icon, MovePriority.PieceCapture);
                         }
                     }
             

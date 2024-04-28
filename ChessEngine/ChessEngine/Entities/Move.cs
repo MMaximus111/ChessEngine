@@ -2,11 +2,12 @@
 
 public readonly struct Move
 {
-    public Move(Location from, Location to, char pieceIcon)
+    public Move(Location from, Location to, char pieceIcon, MovePriority priority)
     {
         From = from;
         To = to;
         PieceIcon = pieceIcon;
+        Priority = priority;
     }
 
     public Location From { get; }
@@ -14,6 +15,8 @@ public readonly struct Move
     public Location To { get; }
 
     public char PieceIcon { get; }
+    
+    public MovePriority Priority { get; }
 
     public override string ToString()
     {

@@ -113,13 +113,13 @@ public class Board
         
                 if (piece != null && piece.Color != kingColor && piece is not King)
                 {
-                    Location[] validLocationsToMove = piece.GetValidLocationsToMove(square.Location, this, false).ToArray();
+                    Move[] validMovements = piece.GetValidMovements(square.Location, this, false).ToArray();
         
-                    CurrentMovePossibleMovesCount += validLocationsToMove.Length;
+                    CurrentMovePossibleMovesCount += validMovements.Length;
                     
-                    foreach (Location location in validLocationsToMove)
+                    foreach (Move move in validMovements)
                     {
-                        if (location.Equals(kingSquare.Location))
+                        if (move.To.Equals(kingSquare.Location))
                         {
                             return true;
                         }
@@ -144,9 +144,9 @@ public class Board
 
             if (piece != null && piece.Color == CurrentMoveColor)
             {
-                foreach (Location location in piece.GetValidLocationsToMove(square.Location, this, true))
+                foreach (Move move in piece.GetValidMovements(square.Location, this, true))
                 {
-                    yield return new Move(square.Location, location, piece.Icon);
+                    yield return move;
                 }
             }
         }
@@ -229,7 +229,7 @@ public class Board
             }
         }
 
-        return price + (CurrentMovePossibleMovesCount / (decimal)10);
+        return price + (CurrentMovePossibleMovesCount / (decimal)100);
     }
     
     public override string ToString()
