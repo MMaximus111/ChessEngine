@@ -1,4 +1,5 @@
 ﻿using ChessEngine.Entities;
+using ChessEngine.Helpers;
 
 namespace ChessEngine;
 
@@ -14,7 +15,7 @@ public class Engine
         {
             if (board.IsKingInCheckmate(board.CurrentMoveColor))
             {
-                return 300;
+                return 300000;
             }
         }
 
@@ -22,7 +23,7 @@ public class Engine
         {
             if (board.IsKingInCheckmate(board.CurrentMoveColor))
             {
-                return -300;
+                return -300000;
             }
         }
         
@@ -36,7 +37,7 @@ public class Engine
         decimal bestScore = 0;
         object lockObject = new object();
         
-        Move[] allPossibleMoves = board.GetAllPossibleMoves().ToArray();
+        Move[] allPossibleMoves = board.GetAllPossibleMoves().OrderByPriorityDesc().ToArray();
         
         if (allPossibleMoves.Any())
         {
@@ -100,7 +101,7 @@ public class Engine
         decimal value;
         // object lockObject = new object();
 
-       IEnumerable<Move> allPossibleMoves = board.GetAllPossibleMoves();
+       IEnumerable<Move> allPossibleMoves = board.GetAllPossibleMoves().OrderByPriorityDesc();
        
         if (isMaximizingPlayer)
         {
@@ -122,25 +123,6 @@ public class Engine
                     break;
                 }
             }
-            
-            // Parallel.ForEach(board.GetAllPossibleMoves(), (move, parallelLoopState) =>
-            // {
-            //     Board boardCopy = board.DeepCopy();
-            //     boardCopy.Move(move);
-            //
-            //     decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, false);
-            //
-            //     lock (lockObject)
-            //     {
-            //         value = Math.Max(value, eval);
-            //         alpha = Math.Max(alpha, eval);
-            //     }
-            //
-            //     if (beta <= alpha)
-            //     {
-            //         parallelLoopState.Break();
-            //     }
-            // });
 
             return value;
         }
@@ -164,25 +146,6 @@ public class Engine
                 break;
             }
         }
-        
-        // Parallel.ForEach(board.GetAllPossibleMoves(), (move, parallelLoopState) =>
-        // {
-        //     Board boardCopy = board.DeepCopy();
-        //     boardCopy.Move(move);
-        //
-        //     decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, true);
-        //
-        //     lock (lockObject)
-        //     {
-        //         value = Math.Min(value, eval);
-        //         beta = Math.Min(beta, eval);
-        //     }
-        //
-        //     if (beta <= alpha)
-        //     {
-        //         parallelLoopState.Break();
-        //     }
-        // });
 
         return value;
     }

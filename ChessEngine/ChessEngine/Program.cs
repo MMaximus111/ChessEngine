@@ -28,34 +28,4 @@ while (true)
     Console.WriteLine($"Evaluations: {engine.GetEvaluationsCount()}");
     
     Console.WriteLine(board);
-    
-    // Console.WriteLine();
-    // Console.WriteLine(board);
-    // Console.WriteLine();
-    //
-    // Console.Write("Enter move: ");
-    // string move = Console.ReadLine()!;
-    //
-    // if (move == "ENGINE" || move == "engine" || move == "e" || move == "E" || move == "")
-    // {
-    //     Console.WriteLine("Engine is thinking...");
-    //     
-    //     Engine engine = new Engine();
-    //     
-    //     Move bestMove = engine.MakeTheBestMove(board, 6);
-    //
-    //     Console.WriteLine($"Engine move: {bestMove}");
-    //     Console.WriteLine($"Evaluation: {engine.Evaluate(board)}");
-    // }
-
-    // try
-    // {
-    //     board.Move(move);
-    //     
-    //     Console.WriteLine(board);
-    // }
-    // catch (Exception ex)
-    // {
-    //     Console.WriteLine(ex.Message);
-    // }
 }
