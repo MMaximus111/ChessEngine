@@ -1,47 +1,41 @@
-﻿namespace ChessEngine.Entities.Pieces;
+﻿using ChessEngine.Dictionaries;
+
+namespace ChessEngine.Entities.Pieces;
 
 public abstract class Rook : Piece
 {
     public override byte Price { get; } = 5;
     
-    private static readonly int[][] Directions = new int[][] { new int[] { -1, 0 }, new int[] { 1, 0 }, new int[] { 0, -1 }, new int[] { 0, 1 } };
-    
+    //private static readonly int[][] Directions = new int[][] { new int[] { -1, 0 }, new int[] { 1, 0 }, new int[] { 0, -1 }, new int[] { 0, 1 } };
+
     public override IEnumerable<Location> GetValidLocationsToMove(Location currentLocation, Board board, bool checkForCheck)
     {
-        foreach (int[] direction in Directions)
+        Location[][] locationLines = AllPossibleMoves.Rook[currentLocation];
+        
+        foreach (Location[] line in locationLines)
         {
-            for (byte i = 1; i <= 8; i++)
+            foreach (Location newLocation in line)
             {
-                Location newLocation = new Location((byte)(currentLocation.X + direction[0] * i), (byte)(currentLocation.Y + direction[1] * i));
-                
-                if (!Board.IsLocationOnBoard(newLocation))
-                {
-                    // Out of board bounds
-                    break;
-                }
+                Square targetSquare = board.GetSquare(newLocation);
 
-                Square square = board.GetSquare(newLocation);
-                Piece? piece = square.Piece;
-
-                if (piece == null)
+                if (targetSquare.Piece == null)
                 {
-                    if (!checkForCheck || !AnyChecks(currentLocation, square.Location, board))
+                    if (!checkForCheck || !AnyChecks(currentLocation, newLocation, board))
                     {
-                        yield return square.Location;
+                        yield return newLocation;
                     }
-                }
-                else if (piece.Color != Color)
-                {
-                    // Opponent's piece
-                    if (!checkForCheck || !AnyChecks(currentLocation, square.Location, board))
-                    {
-                        yield return square.Location;
-                    }
-                    break;
                 }
                 else
                 {
-                    // Own piece
+                    if (targetSquare.Piece.Color != Color)
+                    {
+                        if (!checkForCheck || !AnyChecks(currentLocation, newLocation, board))
+                        {
+                            yield return newLocation;
+                        }
+                    }
+
+                    // Stop if the path is blocked by a piece
                     break;
                 }
             }

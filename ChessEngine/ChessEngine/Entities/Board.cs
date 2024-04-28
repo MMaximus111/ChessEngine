@@ -109,7 +109,7 @@ public class Board
                 Square square = Squares[i, j];
                 Piece? piece = square.Piece;
         
-                if (piece != null && piece.Color != kingColor)
+                if (piece != null && piece.Color != kingColor && piece is not King)
                 {
                     IEnumerable<Location> validLocationsToMove = piece.GetValidLocationsToMove(square.Location, this, false);
         
@@ -181,6 +181,29 @@ public class Board
             }
         }
     }
+    
+    // public void ReverseLastMove(Move move)
+    // {
+    //     Square fromSquare = GetSquare(move.From);
+    //     Square toSquare = GetSquare(move.To);
+    //
+    //     fromSquare.SetPiece(toSquare.Piece!);
+    //     toSquare.Clear();
+    //     
+    //     CurrentMoveColor = CurrentMoveColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
+    //
+    //     if (fromSquare.Piece is King king)
+    //     {
+    //         if (king.Color == PieceColor.White)
+    //         {
+    //             WhiteKingSquare = fromSquare;
+    //         }
+    //         else
+    //         {
+    //             BlackKingSquare = fromSquare;
+    //         }
+    //     }
+    // }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public decimal GetPiecesPrice(PieceColor color)
@@ -246,8 +269,8 @@ public class Board
     
     public Square GetSquare(Location location)
     {
-        int x = location.X - 1;
-        int y = location.Y - 1;
+        byte x = (byte)(location.X - 1);
+        byte y = (byte)(location.Y - 1);
 
         return Squares[x, y];
     }
