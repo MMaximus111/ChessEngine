@@ -18,13 +18,13 @@ while (true)
         
     Stopwatch sw = Stopwatch.StartNew();
     
-    Move bestMove = engine.MakeTheBestMove(board, 6);
+    Move bestMove = engine.MakeTheBestMove(board, 7);
 
     sw.Stop();
     
     Console.WriteLine($"Engine move: {bestMove}");
     Console.WriteLine($"Score: {engine.Evaluate(board)}");
-    Console.WriteLine($"Elapsed: {sw.Elapsed.Seconds} s");
+    Console.WriteLine($"Elapsed: {sw.ElapsedMilliseconds} ms");
     Console.WriteLine($"Evaluations: {engine.GetEvaluationsCount()}");
     
     Console.WriteLine(board);

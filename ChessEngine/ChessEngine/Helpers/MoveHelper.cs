@@ -6,6 +6,6 @@ public static class MoveHelper
 {
     public static IEnumerable<Move> OrderByPriorityDesc(this IEnumerable<Move> moves)
     {
-        return moves.OrderBy(x => x.Priority);
+        return moves.OrderByDescending(x => x.Priority);
     }
 }

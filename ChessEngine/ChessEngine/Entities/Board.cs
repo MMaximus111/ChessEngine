@@ -59,8 +59,10 @@ public class Board
    public Square? BlackKingSquare { get; private set; }
     
     public PieceColor CurrentMoveColor { get; private set; } = PieceColor.White;
+
+    public byte WhitePiecesPrice { get; private set; } = 39;
     
-    public int CurrentMovePossibleMovesCount { get; private set; }
+    public byte BlackPiecesPrice { get; private set; } = 39;
 
     public Square[,] Squares { get; }
     
@@ -113,11 +115,7 @@ public class Board
         
                 if (piece != null && piece.Color != kingColor && piece is not King)
                 {
-                    Move[] validMovements = piece.GetValidMovements(square.Location, this, false).ToArray();
-        
-                    CurrentMovePossibleMovesCount += validMovements.Length;
-                    
-                    foreach (Move move in validMovements)
+                    foreach (Move move in piece.GetValidMovements(square.Location, this, false))
                     {
                         if (move.To.Equals(kingSquare.Location))
                         {
@@ -131,11 +129,13 @@ public class Board
         return false;
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool IsLocationOnBoard(Location location)
     {
         return location.X >= 1 && location.X <= 8 && location.Y >= 1 && location.Y <= 8;
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IEnumerable<Move> GetAllPossibleMoves()
     {
         foreach (Square square in Squares)
@@ -152,11 +152,13 @@ public class Board
         }
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsGameOver()
     {
         return !GetAllPossibleMoves().Any();
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsKingInCheckmate(PieceColor kingColor)
     {
         return IsKingInCheck(kingColor) && IsGameOver();
@@ -168,12 +170,22 @@ public class Board
         Square fromSquare = GetSquare(move.From);
         Square toSquare = GetSquare(move.To);
 
+        if (toSquare.Piece is not null)
+        {
+            if (CurrentMoveColor == PieceColor.White)
+            {
+                BlackPiecesPrice -= toSquare.Piece.Price;
+            }
+            else
+            {
+                WhitePiecesPrice -= toSquare.Piece.Price;
+            }
+        }
+        
         toSquare.SetPiece(fromSquare.Piece!);
         fromSquare.Clear();
         
         CurrentMoveColor = CurrentMoveColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
-
-        CurrentMovePossibleMovesCount = 0;
         
         if (toSquare.Piece is King king)
         {
@@ -188,48 +200,10 @@ public class Board
         }
     }
     
-    // public void ReverseLastMove(Move move)
-    // {
-    //     Square fromSquare = GetSquare(move.From);
-    //     Square toSquare = GetSquare(move.To);
-    //
-    //     fromSquare.SetPiece(toSquare.Piece!);
-    //     toSquare.Clear();
-    //     
-    //     CurrentMoveColor = CurrentMoveColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
-    //
-    //     if (fromSquare.Piece is King king)
-    //     {
-    //         if (king.Color == PieceColor.White)
-    //         {
-    //             WhiteKingSquare = fromSquare;
-    //         }
-    //         else
-    //         {
-    //             BlackKingSquare = fromSquare;
-    //         }
-    //     }
-    // }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public decimal GetPiecesPrice(PieceColor color)
     {
-        decimal price = 0;
-        
-        for (byte i = 0; i < 8; i++)
-        {
-            for (byte j = 0; j < 8; j++)
-            {
-                Square square = Squares[i, j];
-
-                if (square.Piece != null && square.Piece.Color == color)
-                {
-                    price += square.Piece.Price;
-                }
-            }
-        }
-
-        return price + (CurrentMovePossibleMovesCount / (decimal)100);
+        return color == PieceColor.White ? WhitePiecesPrice : BlackPiecesPrice;
     }
     
     public override string ToString()
@@ -272,6 +246,7 @@ public class Board
         return boardString.ToString();
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Square GetSquare(Location location)
     {
         byte x = (byte)(location.X - 1);
@@ -280,6 +255,7 @@ public class Board
         return Squares[x, y];
     }
     
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Board DeepCopy()
     {
         Board newBoard = new Board(true);

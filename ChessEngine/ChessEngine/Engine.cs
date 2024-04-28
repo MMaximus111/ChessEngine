@@ -1,4 +1,5 @@
-﻿using ChessEngine.Entities;
+﻿using System.Runtime.CompilerServices;
+using ChessEngine.Entities;
 using ChessEngine.Helpers;
 
 namespace ChessEngine;
@@ -7,6 +8,7 @@ public class Engine
 {
     private long _evaluationCount;
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public decimal Evaluate(Board board)
     {
         Interlocked.Increment(ref _evaluationCount);
@@ -37,7 +39,7 @@ public class Engine
         decimal bestScore = 0;
         object lockObject = new object();
         
-        Move[] allPossibleMoves = board.GetAllPossibleMoves().OrderByPriorityDesc().ToArray();
+        Move[] allPossibleMoves = board.GetAllPossibleMoves().ToArray();
         
         if (allPossibleMoves.Any())
         {
@@ -91,6 +93,7 @@ public class Engine
         return finalMove;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private decimal Minimax(Board board, int depth, decimal alpha, decimal beta, bool isMaximizingPlayer)
     {
         if (depth == 0)
