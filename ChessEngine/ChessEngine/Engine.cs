@@ -1,5 +1,4 @@
 ﻿using ChessEngine.Entities;
-using ChessEngine.Helpers;
 
 namespace ChessEngine;
 
@@ -41,13 +40,13 @@ public class Engine
         
         if (allPossibleMoves.Any())
         {
-            Parallel.ForEach(board.GetAllPossibleMoves(), new ParallelOptions() { MaxDegreeOfParallelism = allPossibleMoves.Length }, (move) =>
+            Parallel.ForEach(allPossibleMoves, new ParallelOptions() { MaxDegreeOfParallelism = allPossibleMoves.Length }, (move) =>
             {
                 Board boardCopy = board.DeepCopy();
         
                 boardCopy.Move(move);
         
-                decimal score = Minimax(boardCopy, depth - 1, decimal.MinValue, decimal.MaxValue, false);
+                decimal score = Minimax(boardCopy, depth - 1, decimal.MinValue, decimal.MaxValue,  false);
         
                 lock (lockObject)
                 {
@@ -93,13 +92,13 @@ public class Engine
 
     private decimal Minimax(Board board, int depth, decimal alpha, decimal beta, bool isMaximizingPlayer)
     {
-        if (depth == 0 || board.IsGameOver())
+        if (depth == 0)
         {
             return Evaluate(board);
         }
 
         decimal value;
-       //object lockObject = new object();
+        // object lockObject = new object();
 
        IEnumerable<Move> allPossibleMoves = board.GetAllPossibleMoves();
        
@@ -110,7 +109,7 @@ public class Engine
             foreach (Move possibleMove in allPossibleMoves)
             {
                 Board boardCopy = board.DeepCopy();
-
+            
                 boardCopy.Move(possibleMove);
             
                 decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, false);
@@ -151,13 +150,13 @@ public class Engine
         foreach (Move possibleMove in allPossibleMoves)
         {
             Board boardCopy = board.DeepCopy();
-
+        
             boardCopy.Move(possibleMove);
         
             decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, true);
         
             value = Math.Min(value, eval);
-
+        
             beta = Math.Min(beta, eval);
         
             if (beta <= alpha)

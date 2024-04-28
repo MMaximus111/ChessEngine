@@ -59,6 +59,8 @@ public class Board
    public Square? BlackKingSquare { get; private set; }
     
     public PieceColor CurrentMoveColor { get; private set; } = PieceColor.White;
+    
+    public int CurrentMovePossibleMovesCount { get; private set; }
 
     public Square[,] Squares { get; }
     
@@ -111,8 +113,10 @@ public class Board
         
                 if (piece != null && piece.Color != kingColor && piece is not King)
                 {
-                    IEnumerable<Location> validLocationsToMove = piece.GetValidLocationsToMove(square.Location, this, false);
+                    Location[] validLocationsToMove = piece.GetValidLocationsToMove(square.Location, this, false).ToArray();
         
+                    CurrentMovePossibleMovesCount += validLocationsToMove.Length;
+                    
                     foreach (Location location in validLocationsToMove)
                     {
                         if (location.Equals(kingSquare.Location))
@@ -169,6 +173,8 @@ public class Board
         
         CurrentMoveColor = CurrentMoveColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
 
+        CurrentMovePossibleMovesCount = 0;
+        
         if (toSquare.Piece is King king)
         {
             if (king.Color == PieceColor.White)
@@ -219,12 +225,11 @@ public class Board
                 if (square.Piece != null && square.Piece.Color == color)
                 {
                     price += square.Piece.Price;
-                    //price += (square.Piece.Price + (square.Piece.GetValidLocationsToMove(square.Location, this, true).Count() / (decimal)100));
                 }
             }
         }
 
-        return price;
+        return price + (CurrentMovePossibleMovesCount / (decimal)10);
     }
     
     public override string ToString()
