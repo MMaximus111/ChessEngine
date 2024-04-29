@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Net;
+using System.Runtime.CompilerServices;
 using ChessEngine.Entities;
 using ChessEngine.Entities.Pieces;
 using ChessEngine.Helpers;
@@ -38,43 +39,44 @@ public class Engine
         Move? bestMove = null;
         Move? firstValidMove = null;
         decimal bestScore = 0;
-        object lockObject = new object();
-        
+
         Move[] allPossibleMoves = board.GetAllPossibleMoves().ToArray();
-        
+
         if (allPossibleMoves.Any())
         {
-            Parallel.ForEach(allPossibleMoves, new ParallelOptions() { MaxDegreeOfParallelism = allPossibleMoves.Length }, (move) =>
+            foreach (var move in allPossibleMoves)
             {
                 Board boardCopy = board.DeepCopy();
-        
-                boardCopy.Move(move);
-        
-                decimal score = Minimax(boardCopy, depth - 1, decimal.MinValue, decimal.MaxValue,  false);
-        
-                lock (lockObject)
+
+                (bool ValidMove, byte? capturedPieceId) result = boardCopy.Move(move);
+
+                if (!result.ValidMove)
                 {
-                    firstValidMove ??= move;
-                
-                    if (board.CurrentMoveColor == PieceColor.Black)
+                    continue;
+                }
+
+                decimal score = Minimax(boardCopy, depth - 1, decimal.MinValue, decimal.MaxValue, false);
+
+                firstValidMove ??= move;
+
+                if (board.CurrentMoveColor == PieceColor.Black)
+                {
+                    if (score <= bestScore)
                     {
-                        if (score <= bestScore)
-                        {
-                            bestScore = score;
-                            bestMove = move;
-                        }
-                    }
-                
-                    if (board.CurrentMoveColor == PieceColor.White)
-                    {
-                        if (score >= bestScore)
-                        {
-                            bestScore = score;
-                            bestMove = move;
-                        }
+                        bestScore = score;
+                        bestMove = move;
                     }
                 }
-            });
+
+                if (board.CurrentMoveColor == PieceColor.White)
+                {
+                    if (score >= bestScore)
+                    {
+                        bestScore = score;
+                        bestMove = move;
+                    }
+                }
+            }
         }
 
         if (bestMove == null && firstValidMove == null)
@@ -103,7 +105,6 @@ public class Engine
         }
 
         decimal value;
-        // object lockObject = new object();
 
        IEnumerable<Move> allPossibleMoves = board.GetAllPossibleMoves().OrderByPriorityDesc();
        
@@ -113,15 +114,20 @@ public class Engine
 
             foreach (Move possibleMove in allPossibleMoves)
             {
-                Board boardCopy = board.DeepCopy();
-            
-                boardCopy.Move(possibleMove);
-            
-                decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, false);
+                (bool ValidMove, byte? capturedPieceId) result = board.Move(possibleMove);
+                
+                if (!result.ValidMove)
+                {
+                    continue;
+                }
+                
+                decimal eval = Minimax(board, depth - 1, alpha, beta, false);
             
                 value = Math.Max(value, eval);
                 alpha = Math.Max(alpha, eval);
             
+                board.UndoMove(possibleMove, result.capturedPieceId);
+                
                 if (beta <= alpha)
                 {
                     break;
@@ -135,22 +141,27 @@ public class Engine
 
         foreach (Move possibleMove in allPossibleMoves)
         {
-            Board boardCopy = board.DeepCopy();
+            (bool ValidMove, byte? capturedPieceId) result = board.Move(possibleMove);
         
-            boardCopy.Move(possibleMove);
-        
-            decimal eval = Minimax(boardCopy, depth - 1, alpha, beta, true);
+            if (!result.ValidMove)
+            {
+                continue;
+            }
+
+            decimal eval = Minimax(board, depth - 1, alpha, beta, true);
         
             value = Math.Min(value, eval);
         
             beta = Math.Min(beta, eval);
         
+            board.UndoMove(possibleMove, result.capturedPieceId);
+            
             if (beta <= alpha)
             {
                 break;
             }
         }
-
+        
         return value;
     }
 

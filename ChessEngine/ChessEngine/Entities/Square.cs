@@ -1,6 +1,4 @@
-﻿using ChessEngine.Entities.Pieces;
-
-namespace ChessEngine.Entities;
+﻿namespace ChessEngine.Entities;
 
 public struct Square
 {
