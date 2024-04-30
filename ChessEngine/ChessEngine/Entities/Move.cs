@@ -1,4 +1,6 @@
-﻿namespace ChessEngine.Entities;
+﻿using ChessEngine.Dictionaries;
+
+namespace ChessEngine.Entities;
 
 public readonly struct Move
 {
@@ -20,6 +22,6 @@ public readonly struct Move
 
     public override string ToString()
     {
-        return $"{PieceId} {To}";
+        return $"{[ChessDictionary.PieceNames[PieceId]]} {To}";
     }
 }

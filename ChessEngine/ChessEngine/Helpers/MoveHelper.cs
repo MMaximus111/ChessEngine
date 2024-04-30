@@ -12,21 +12,22 @@ public static class MoveHelper
         return moves.OrderByDescending(x => x.Priority);
     }
 
-    public static IEnumerable<Move> GetValidMovements(byte pieceId, Location currentLocation, Board board, bool checkForCheck)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static IEnumerable<Move> GetValidMovements(byte pieceId, Location currentLocation, Board board)
     {
         return pieceId switch
         {
-            ChessDictionary.WhitePawnId or ChessDictionary.BlackPawnId => GetPawnValidMovements(pieceId, currentLocation, board, checkForCheck),
-            ChessDictionary.WhiteKnightId or ChessDictionary.BlackKnightId => GetKnightValidMovements(pieceId, currentLocation, board, checkForCheck),
-            ChessDictionary.WhiteBishopId or ChessDictionary.BlackBishopId => GetBishopValidMovements(pieceId, currentLocation, board, checkForCheck),
-            ChessDictionary.WhiteRookId or ChessDictionary.BlackRookId => GetRookValidMovements(pieceId, currentLocation, board, checkForCheck),
-            ChessDictionary.WhiteQueenId or ChessDictionary.BlackQueenId => GetQueenValidMovements(pieceId, currentLocation, board, checkForCheck),
-            ChessDictionary.WhiteKingId or ChessDictionary.BlackKingId => GetKingValidMovements(pieceId, currentLocation, board, checkForCheck),
+            ChessDictionary.WhitePawnId or ChessDictionary.BlackPawnId => GetPawnValidMovements(pieceId, currentLocation, board),
+            ChessDictionary.WhiteKnightId or ChessDictionary.BlackKnightId => GetKnightValidMovements(pieceId, currentLocation, board),
+            ChessDictionary.WhiteBishopId or ChessDictionary.BlackBishopId => GetBishopValidMovements(pieceId, currentLocation, board),
+            ChessDictionary.WhiteRookId or ChessDictionary.BlackRookId => GetRookValidMovements(pieceId, currentLocation, board),
+            ChessDictionary.WhiteQueenId or ChessDictionary.BlackQueenId => GetQueenValidMovements(pieceId, currentLocation, board),
+            ChessDictionary.WhiteKingId or ChessDictionary.BlackKingId => GetKingValidMovements(pieceId, currentLocation, board),
             _ => throw new ArgumentOutOfRangeException(nameof(pieceId), pieceId, null)
         };
     }
 
-    private static IEnumerable<Move> GetBishopValidMovements(byte pieceId, Location currentLocation, Board board, bool checkForCheck)
+    private static IEnumerable<Move> GetBishopValidMovements(byte pieceId, Location currentLocation, Board board)
     {
         Location[][] locationLines = AllPossibleMoves.Bishop[currentLocation];
 
@@ -54,7 +55,7 @@ public static class MoveHelper
         }
     }
 
-    private static IEnumerable<Move> GetQueenValidMovements(byte pieceId, Location currentLocation, Board board, bool checkForCheck)
+    private static IEnumerable<Move> GetQueenValidMovements(byte pieceId, Location currentLocation, Board board)
     {
         Location[][] locationLines = AllPossibleMoves.Queen[currentLocation];
 
@@ -81,7 +82,7 @@ public static class MoveHelper
         }
     }
 
-    private static IEnumerable<Move> GetRookValidMovements(byte pieceId, Location currentLocation, Board board, bool checkForCheck)
+    private static IEnumerable<Move> GetRookValidMovements(byte pieceId, Location currentLocation, Board board)
     {
         Location[][] locationLines = AllPossibleMoves.Rook[currentLocation];
 
@@ -109,7 +110,7 @@ public static class MoveHelper
         }
     }
 
-    public static IEnumerable<Move> GetKingValidMovements(byte pieceId, Location currentLocation, Board board, bool checkForCheck)
+    public static IEnumerable<Move> GetKingValidMovements(byte pieceId, Location currentLocation, Board board)
     {
         Location[][] locationLines = AllPossibleMoves.King[currentLocation];
 
@@ -127,7 +128,7 @@ public static class MoveHelper
         }
     }
 
-    public static IEnumerable<Move> GetKnightValidMovements(byte pieceId, Location currentLocation, Board board, bool checkForCheck)
+    public static IEnumerable<Move> GetKnightValidMovements(byte pieceId, Location currentLocation, Board board)
     {
         Location[][] locationLines = AllPossibleMoves.Knight[currentLocation];
 
@@ -145,7 +146,7 @@ public static class MoveHelper
         }
     }
 
-    public static IEnumerable<Move> GetPawnValidMovements(byte pieceId, Location currentLocation, Board board, bool checkForCheck)
+    public static IEnumerable<Move> GetPawnValidMovements(byte pieceId, Location currentLocation, Board board)
     {
         // Determine the direction of movement based on the color of the pawn
         int direction = ChessDictionary.GetColorByPieceId(pieceId) == PieceColor.White ? 1 : -1;
@@ -156,7 +157,6 @@ public static class MoveHelper
         if (Board.IsLocationOnBoard(frontLocation) && board.GetSquare(frontLocation).PieceId == null)
         {
             yield return new Move(currentLocation, frontLocation, pieceId, 0);
-
 
             // Check if the pawn is on its initial position and the square two steps ahead is free
             if ((ChessDictionary.GetColorByPieceId(pieceId) == PieceColor.White && currentLocation.Y == 2) || (ChessDictionary.GetColorByPieceId(pieceId) == PieceColor.Black && currentLocation.Y == 7))
@@ -170,39 +170,27 @@ public static class MoveHelper
             }
         }
 
-        // Check the squares diagonally in front of the pawn for opponent's pieces
-        Location[] diagonalLocations = new Location[]
+        Location leftDiagonalLocation = new Location((byte)(currentLocation.X - 1), (byte)(currentLocation.Y + direction));
+        Location rightDiagonalLocation = new Location((byte)(currentLocation.X + 1), (byte)(currentLocation.Y + direction));
+        
+        if (Board.IsLocationOnBoard(leftDiagonalLocation))
         {
-            new Location((byte)(currentLocation.X - 1), (byte)(currentLocation.Y + direction)),
-            new Location((byte)(currentLocation.X + 1), (byte)(currentLocation.Y + direction))
-        };
+            byte? targetPieceId = board.GetSquare(leftDiagonalLocation).PieceId;
 
-        foreach (Location diagonalLocation in diagonalLocations)
-        {
-            if (Board.IsLocationOnBoard(diagonalLocation))
+            if (targetPieceId != null && ChessDictionary.GetColorByPieceId(targetPieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
             {
-                byte? targetPieceId = board.GetSquare(diagonalLocation).PieceId;
-
-                if (targetPieceId != null && ChessDictionary.GetColorByPieceId(targetPieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
-                {
-                    yield return new Move(currentLocation, frontLocation, pieceId, MovePriority.PieceCapture);
-                }
+                yield return new Move(currentLocation, frontLocation, pieceId, MovePriority.PieceCapture);
             }
         }
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static bool AnyChecks(byte pieceId, Location currentLocation, Location possibleLocation, Board board)
-    {
-        Board testBoard = board.DeepCopy();
-
-        testBoard.Move(new Move(currentLocation, possibleLocation, pieceId, 0));
-
-        if (testBoard.IsKingInCheck(ChessDictionary.GetColorByPieceId(pieceId)))
+        
+        if (Board.IsLocationOnBoard(rightDiagonalLocation))
         {
-            return true;
-        }
+            byte? targetPieceId = board.GetSquare(rightDiagonalLocation).PieceId;
 
-        return false;
+            if (targetPieceId != null && ChessDictionary.GetColorByPieceId(targetPieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
+            {
+                yield return new Move(currentLocation, frontLocation, pieceId, MovePriority.PieceCapture);
+            }
+        }
     }
 }

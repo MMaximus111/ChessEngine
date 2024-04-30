@@ -76,21 +76,18 @@ public class Board
             return true;
         }
 
-        for (byte i = 0; i < 8; i++)
+        foreach (Location attackLocations in AllPossibleMoves.AttackLocations[kingSquare.Value.Location])
         {
-            for (byte j = 0; j < 8; j++)
-            {
-                Square square = Squares[i, j];
-                byte? pieceId = square.PieceId;
+            Square square = Squares[attackLocations.X - 1, attackLocations.Y - 1];
+            byte? pieceId = square.PieceId;
         
-                if (pieceId != null && ChessDictionary.GetColorByPieceId(pieceId.Value) != kingColor && pieceId != ChessDictionary.WhiteKingId && pieceId != ChessDictionary.BlackKingId)
+            if (pieceId != null && ChessDictionary.GetColorByPieceId(pieceId.Value) != kingColor && pieceId != ChessDictionary.WhiteKingId && pieceId != ChessDictionary.BlackKingId)
+            {
+                foreach (Move move in MoveHelper.GetValidMovements(pieceId.Value, square.Location, this))
                 {
-                    foreach (Move move in MoveHelper.GetValidMovements(pieceId.Value, square.Location, this, false))
+                    if (move.To.Equals(kingSquare.Value.Location))
                     {
-                        if (move.To.Equals(kingSquare.Value.Location))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
@@ -114,7 +111,7 @@ public class Board
 
             if (pieceId != null && ChessDictionary.GetColorByPieceId(pieceId.Value) == CurrentMoveColor)
             {
-                foreach (Move move in MoveHelper.GetValidMovements(pieceId.Value, square.Location, this, true))
+                foreach (Move move in MoveHelper.GetValidMovements(pieceId.Value, square.Location, this))
                 {
                     yield return move;
                 }
@@ -168,7 +165,41 @@ public class Board
         byte toX = (byte)(move.To.X - 1);
         byte toY = (byte)(move.To.Y - 1);
         
-        byte? capturedPieceId = Squares[toX, toY].PieceId;
+        var toSquare = Squares[toX, toY];
+        
+        byte? capturedPieceId = toSquare.PieceId;
+
+        Squares[toX, toY].SetPiece(Squares[fromX, fromY].PieceId);
+        Squares[fromX, fromY].Clear();
+        
+        if (toSquare.PieceId == ChessDictionary.WhiteKingId)
+        {
+            WhiteKingSquare = toSquare;
+        }
+        else if (toSquare.PieceId == ChessDictionary.BlackKingId)
+        {
+            BlackKingSquare = toSquare;
+        }
+
+        if (IsKingInCheck(CurrentMoveColor))
+        {
+            // rollback move
+            Squares[fromX, fromY].SetPiece(toSquare.PieceId);
+            toSquare.SetPiece(capturedPieceId);
+
+            if (toSquare.PieceId == ChessDictionary.WhiteKingId)
+            {
+                WhiteKingSquare = Squares[fromX, fromY];
+            }
+            else if (toSquare.PieceId == ChessDictionary.BlackKingId)
+            {
+                BlackKingSquare = Squares[fromX, fromY];
+            }
+
+            return (false, null);
+        }
+        
+        CurrentMoveColor = CurrentMoveColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
         
         if (capturedPieceId.HasValue)
         {
@@ -182,32 +213,7 @@ public class Board
             }
         }
         
-        Squares[toX, toY].SetPiece(Squares[fromX, fromY].PieceId);
-        Squares[fromX, fromY].Clear();
-
-        if (IsKingInCheck(CurrentMoveColor))
-        {
-            Squares[fromX, fromY].SetPiece(Squares[toX, toY].PieceId);
-            Squares[toX, toY].SetPiece(capturedPieceId);
-            return (false, null);
-        }
-        
-        CurrentMoveColor = CurrentMoveColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
-        
-        if (Squares[toX, toY].PieceId is ChessDictionary.WhiteKingId or ChessDictionary.BlackKingId)
-        {
-            if (Squares[toX, toY].PieceId == ChessDictionary.WhiteKingId)
-            {
-                WhiteKingSquare = Squares[toX, toY];
-            }
-            else
-            {
-                BlackKingSquare = Squares[toX, toY];
-            }
-        }
-        
         return (true, capturedPieceId);
-        ;
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

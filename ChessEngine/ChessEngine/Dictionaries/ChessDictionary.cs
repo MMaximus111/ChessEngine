@@ -34,21 +34,21 @@ public static class ChessDictionary
         { WhitePawnId, '♟' }
     };
 
-    public static readonly Dictionary<byte, byte> PiecePrices = new Dictionary<byte, byte>
+    public static readonly FrozenDictionary<byte, byte> PiecePrices = new Dictionary<byte, byte>
     {
-        { BlackKingId, 250 },
+        { BlackKingId, 0 },
         { BlackQueenId, 9 },
         { BlackRookId, 5 },
         { BlackBishopId, 3 },
         { BlackKnightId, 3 },
         { BlackPawnId, 1 },
-        { WhiteKingId, 250 },
+        { WhiteKingId, 0 },
         { WhiteQueenId, 9 },
         { WhiteRookId, 5 },
         { WhiteBishopId, 3 },
         { WhiteKnightId, 3 },
         { WhitePawnId, 1 }
-    };
+    }.ToFrozenDictionary();
 
     public static PieceColor GetColorByPieceId(byte pieceId)
     {

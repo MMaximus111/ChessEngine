@@ -2,7 +2,6 @@
 using System.Runtime.CompilerServices;
 using ChessEngine.Entities;
 using ChessEngine.Entities.Pieces;
-using ChessEngine.Helpers;
 
 namespace ChessEngine;
 
@@ -13,7 +12,7 @@ public class Engine
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public decimal Evaluate(Board board)
     {
-        Interlocked.Increment(ref _evaluationCount);
+        _evaluationCount++;
         
         if (board.CurrentMoveColor == PieceColor.Black)
         {
@@ -44,7 +43,7 @@ public class Engine
 
         if (allPossibleMoves.Any())
         {
-            foreach (var move in allPossibleMoves)
+            foreach (Move move in allPossibleMoves)
             {
                 Board boardCopy = board.DeepCopy();
 
@@ -55,26 +54,20 @@ public class Engine
                     continue;
                 }
 
-                decimal score = Minimax(boardCopy, depth - 1, decimal.MinValue, decimal.MaxValue, false);
+                decimal score = Minimax(boardCopy, depth - 1, decimal.MinValue, decimal.MaxValue, true);
 
                 firstValidMove ??= move;
 
-                if (board.CurrentMoveColor == PieceColor.Black)
+                if (board.CurrentMoveColor == PieceColor.Black && score <= bestScore)
                 {
-                    if (score <= bestScore)
-                    {
-                        bestScore = score;
-                        bestMove = move;
-                    }
+                    bestScore = score;
+                    bestMove = move;
                 }
 
-                if (board.CurrentMoveColor == PieceColor.White)
+                if (board.CurrentMoveColor == PieceColor.White && score >= bestScore)
                 {
-                    if (score >= bestScore)
-                    {
-                        bestScore = score;
-                        bestMove = move;
-                    }
+                    bestScore = score;
+                    bestMove = move;
                 }
             }
         }
@@ -106,7 +99,7 @@ public class Engine
 
         decimal value;
 
-       IEnumerable<Move> allPossibleMoves = board.GetAllPossibleMoves().OrderByPriorityDesc();
+       IEnumerable<Move> allPossibleMoves = board.GetAllPossibleMoves();
        
         if (isMaximizingPlayer)
         {
@@ -151,7 +144,6 @@ public class Engine
             decimal eval = Minimax(board, depth - 1, alpha, beta, true);
         
             value = Math.Min(value, eval);
-        
             beta = Math.Min(beta, eval);
         
             board.UndoMove(possibleMove, result.capturedPieceId);
