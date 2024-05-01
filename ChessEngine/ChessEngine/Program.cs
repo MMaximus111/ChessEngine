@@ -18,7 +18,7 @@ while (true)
         
     Stopwatch sw = Stopwatch.StartNew();
     
-    Move bestMove = engine.MakeTheBestMove(board, 8);
+    Move bestMove = engine.MakeTheBestMove(board, 6);
 
     sw.Stop();
     

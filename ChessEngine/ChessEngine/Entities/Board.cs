@@ -8,6 +8,11 @@ namespace ChessEngine.Entities;
 
 public class Board
 {
+    private Location _previousWhiteKingLocation;
+    private Location _previousBlackKingLocation;
+    private byte _whitePiecesPrice = 39;
+    private byte _blackPiecesPrice = 39;
+    
    public Board(bool empty = false)
    {
        Squares = new Square[8, 8];
@@ -18,7 +23,7 @@ public class Board
            {
                Location location = new Location((byte)(i + 1), (byte)(j + 1));
 
-               byte? pieceId = null;
+               byte pieceId = ChessDictionary.NoneId;
 
                if (!empty)
                {
@@ -42,50 +47,45 @@ public class Board
                        { X: 6, Y: 8 } => ChessDictionary.BlackBishopId,
                        { X: 7, Y: 8 } => ChessDictionary.BlackKnightId,
                        { X: 8, Y: 8 } => ChessDictionary.BlackRookId,
-                       _ => null
+                       _ => ChessDictionary.NoneId
                    };
                    
-                   WhiteKingSquare = GetSquare(new Location(5, 1));
-                   BlackKingSquare = GetSquare(new Location(5, 8));
+                   WhiteKingLocation = new Location(5, 1);
+                   BlackKingLocation = new Location(5, 8);
                }
 
                Squares[i, j] = new Square(location, pieceId);
            }
        }
    }
-   
-   public Square? WhiteKingSquare { get; private set; }
-   
-   public Square? BlackKingSquare { get; private set; }
-    
-    public PieceColor CurrentMoveColor { get; private set; } = PieceColor.White;
 
-    public byte WhitePiecesPrice { get; private set; } = 39;
-    
-    public byte BlackPiecesPrice { get; private set; } = 39;
+   public Location? WhiteKingLocation { get; private set; }
 
-    public Square[,] Squares { get; }
+   public Location? BlackKingLocation { get; private set; }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public PieceColor CurrentMoveColor { get; set; } = PieceColor.White;
+
+   public Square[,] Squares { get; }
+
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsKingInCheck(PieceColor kingColor)
     {
-        Square? kingSquare = kingColor == PieceColor.White ? WhiteKingSquare : BlackKingSquare;
+        Location? kingLocation = kingColor == PieceColor.White ? WhiteKingLocation : BlackKingLocation;
 
-        if (kingSquare is null)
+        if (kingLocation is null)
         {
             return true;
         }
 
-        foreach (Location attackLocations in AllPossibleMoves.AttackLocations[kingSquare.Value.Location])
+        foreach (Location attackLocations in AllPossibleMoves.AttackLocations[kingLocation.Value])
         {
             Square square = Squares[attackLocations.X - 1, attackLocations.Y - 1];
-            byte? pieceId = square.PieceId;
         
-            if (pieceId != null && ChessDictionary.GetColorByPieceId(pieceId.Value) != kingColor && pieceId != ChessDictionary.WhiteKingId && pieceId != ChessDictionary.BlackKingId)
+            if (square.PieceId > 0 && ChessDictionary.GetColorByPieceId(square.PieceId) != kingColor && square.PieceId != ChessDictionary.WhiteKingId && square.PieceId != ChessDictionary.BlackKingId)
             {
-                foreach (Move move in MoveHelper.GetValidMovements(pieceId.Value, square.Location, this))
+                foreach (Move move in MoveHelper.GetValidMovements(square.PieceId, square.Location, this))
                 {
-                    if (move.To.Equals(kingSquare.Value.Location))
+                    if (move.To.X == kingLocation.Value.X && move.To.Y == kingLocation.Value.Y)
                     {
                         return true;
                     }
@@ -103,15 +103,13 @@ public class Board
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public IEnumerable<Move> GetAllPossibleMoves()
+    public IEnumerable<Move> GetAllPossibleMoves(PieceColor? pieceColor = null)
     {
         foreach (Square square in Squares)
         {
-            byte? pieceId = square.PieceId;
-
-            if (pieceId != null && ChessDictionary.GetColorByPieceId(pieceId.Value) == CurrentMoveColor)
+            if (square.PieceId > 0 && ChessDictionary.GetColorByPieceId(square.PieceId) == (pieceColor ?? CurrentMoveColor))
             {
-                foreach (Move move in MoveHelper.GetValidMovements(pieceId.Value, square.Location, this))
+                foreach (Move move in MoveHelper.GetValidMovements(square.PieceId, square.Location, this))
                 {
                     yield return move;
                 }
@@ -132,7 +130,7 @@ public class Board
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void UndoMove(Move move, byte? capturedPieceId)
+    public void UndoMove(Move move, byte capturedPieceId)
     {
         byte fromX = (byte)(move.From.X - 1);
         byte fromY = (byte)(move.From.Y - 1);
@@ -142,74 +140,69 @@ public class Board
         Squares[fromX, fromY].SetPiece(Squares[toX, toY].PieceId);
         Squares[toX, toY].SetPiece(capturedPieceId);
         
-        CurrentMoveColor = CurrentMoveColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
-        
-        if (Squares[fromX, fromY].PieceId is ChessDictionary.WhiteKingId or ChessDictionary.BlackKingId)
+        if (capturedPieceId > 0)
         {
-            if (Squares[fromX, fromY].PieceId == ChessDictionary.WhiteKingId)
+            if (CurrentMoveColor == PieceColor.White)
             {
-                WhiteKingSquare = Squares[fromX, fromY];
+                _whitePiecesPrice += ChessDictionary.PiecePrices[capturedPieceId];
             }
             else
             {
-                BlackKingSquare = Squares[fromX, fromY];
+                _blackPiecesPrice += ChessDictionary.PiecePrices[capturedPieceId];
             }
         }
+        
+        CurrentMoveColor = CurrentMoveColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
+        
+        WhiteKingLocation = _previousWhiteKingLocation;
+        BlackKingLocation = _previousBlackKingLocation;
     }
     
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public (bool ValidMove, byte? capturedPieceId) Move(Move move)
+    public (bool ValidMove, byte capturedPieceId) Move(Move move)
     {
         byte fromX = (byte)(move.From.X - 1);
         byte fromY = (byte)(move.From.Y - 1);
         byte toX = (byte)(move.To.X - 1);
         byte toY = (byte)(move.To.Y - 1);
         
-        var toSquare = Squares[toX, toY];
+        Square toSquare = Squares[toX, toY];
         
-        byte? capturedPieceId = toSquare.PieceId;
+        byte capturedPieceId = toSquare.PieceId;
 
+        _previousWhiteKingLocation = WhiteKingLocation!.Value;
+        _previousBlackKingLocation = BlackKingLocation!.Value;
+        
         Squares[toX, toY].SetPiece(Squares[fromX, fromY].PieceId);
         Squares[fromX, fromY].Clear();
         
         if (toSquare.PieceId == ChessDictionary.WhiteKingId)
         {
-            WhiteKingSquare = toSquare;
+            WhiteKingLocation = toSquare.Location;
         }
         else if (toSquare.PieceId == ChessDictionary.BlackKingId)
         {
-            BlackKingSquare = toSquare;
+            BlackKingLocation = toSquare.Location;
         }
 
         if (IsKingInCheck(CurrentMoveColor))
         {
-            // rollback move
-            Squares[fromX, fromY].SetPiece(toSquare.PieceId);
-            toSquare.SetPiece(capturedPieceId);
+            UndoMove(move, capturedPieceId);   
 
-            if (toSquare.PieceId == ChessDictionary.WhiteKingId)
-            {
-                WhiteKingSquare = Squares[fromX, fromY];
-            }
-            else if (toSquare.PieceId == ChessDictionary.BlackKingId)
-            {
-                BlackKingSquare = Squares[fromX, fromY];
-            }
-
-            return (false, null);
+            return (false, ChessDictionary.NoneId);
         }
         
         CurrentMoveColor = CurrentMoveColor == PieceColor.White ? PieceColor.Black : PieceColor.White;
         
-        if (capturedPieceId.HasValue)
+        if (capturedPieceId > 0)
         {
             if (CurrentMoveColor == PieceColor.White)
             {
-                BlackPiecesPrice -= ChessDictionary.PiecePrices[capturedPieceId.Value];
+                _whitePiecesPrice -= ChessDictionary.PiecePrices[capturedPieceId];
             }
             else
             {
-                WhitePiecesPrice -= ChessDictionary.PiecePrices[capturedPieceId.Value];
+                _blackPiecesPrice -= ChessDictionary.PiecePrices[capturedPieceId];
             }
         }
         
@@ -219,7 +212,7 @@ public class Board
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public decimal GetPiecesPrice(PieceColor color)
     {
-        return color == PieceColor.White ? WhitePiecesPrice : BlackPiecesPrice;
+        return color == PieceColor.White ? _whitePiecesPrice : _blackPiecesPrice;
     }
     
     public override string ToString()
@@ -238,7 +231,7 @@ public class Board
     
                 boardString.Append(verticalSeparator);
     
-                if (pieceId != null)
+                if (pieceId > 0)
                 {
                     char symbol = ChessDictionary.PieceNames[pieceId.Value];
                     boardString.Append(symbol);
@@ -280,17 +273,25 @@ public class Board
         {
             for (byte j = 0; j < 8; j++)
             {
-                if (Squares[i, j].PieceId != null)
+                if (Squares[i, j].PieceId > 0)
                 {
-                    newBoard.Squares[i, j].SetPiece(Squares[i, j].PieceId!.Value);
+                    newBoard.Squares[i, j].SetPiece(Squares[i, j].PieceId);
                 }
             }
         }
 
         newBoard.CurrentMoveColor = CurrentMoveColor;
-        newBoard.WhiteKingSquare = WhiteKingSquare;
-        newBoard.BlackKingSquare = BlackKingSquare;
+        newBoard.WhiteKingLocation = WhiteKingLocation;
+        newBoard.BlackKingLocation = BlackKingLocation;
+        
+        newBoard.SetPiecesPrice(_whitePiecesPrice, _blackPiecesPrice);
 
         return newBoard;
+    }
+    
+    private void SetPiecesPrice(byte whitePiecesPrice, byte blackPiecesPrice)
+    {
+        _whitePiecesPrice = whitePiecesPrice;
+        _blackPiecesPrice = blackPiecesPrice;
     }
 }

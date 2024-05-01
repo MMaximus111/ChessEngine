@@ -5,18 +5,19 @@ namespace ChessEngine.Dictionaries;
 
 public static class ChessDictionary
 {
-    public const int WhitePawnId = 1;
-    public const int BlackPawnId = 2;
-    public const int WhiteKnightId = 3;
-    public const int BlackKnightId = 4;
-    public const int WhiteBishopId = 5;
-    public const int BlackBishopId = 6;
-    public const int WhiteRookId = 7;
-    public const int BlackRookId = 8;
-    public const int WhiteQueenId = 9;
-    public const int BlackQueenId = 10;
-    public const int WhiteKingId = 11;
-    public const int BlackKingId = 12;
+    public const byte NoneId = 0;
+    public const byte WhitePawnId = 1;
+    public const byte BlackPawnId = 2;
+    public const byte WhiteKnightId = 3;
+    public const byte BlackKnightId = 4;
+    public const byte WhiteBishopId = 5;
+    public const byte BlackBishopId = 6;
+    public const byte WhiteRookId = 7;
+    public const byte BlackRookId = 8;
+    public const byte WhiteQueenId = 9;
+    public const byte BlackQueenId = 10;
+    public const byte WhiteKingId = 11;
+    public const byte BlackKingId = 12;
 
     public static readonly Dictionary<byte, char> PieceNames = new Dictionary<byte, char>
     {

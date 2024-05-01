@@ -29,21 +29,19 @@ public static class MoveHelper
 
     private static IEnumerable<Move> GetBishopValidMovements(byte pieceId, Location currentLocation, Board board)
     {
-        Location[][] locationLines = AllPossibleMoves.Bishop[currentLocation];
-
-        foreach (Location[] line in locationLines)
+        foreach (Location[] line in AllPossibleMoves.Bishop[currentLocation])
         {
             foreach (Location newLocation in line)
             {
                 Square targetSquare = board.GetSquare(newLocation);
 
-                if (targetSquare.PieceId == null)
+                if (targetSquare.PieceId == ChessDictionary.NoneId)
                 {
                     yield return new Move(currentLocation, newLocation, pieceId, MovePriority.Default);
                 }
                 else
                 {
-                    if (ChessDictionary.GetColorByPieceId(targetSquare.PieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
+                    if (ChessDictionary.GetColorByPieceId(targetSquare.PieceId) != ChessDictionary.GetColorByPieceId(pieceId))
                     {
                         yield return new Move(currentLocation, newLocation, pieceId, MovePriority.PieceCapture);
                     }
@@ -57,21 +55,19 @@ public static class MoveHelper
 
     private static IEnumerable<Move> GetQueenValidMovements(byte pieceId, Location currentLocation, Board board)
     {
-        Location[][] locationLines = AllPossibleMoves.Queen[currentLocation];
-
-        foreach (Location[] locationLine in locationLines)
+        foreach (Location[] locationLine in AllPossibleMoves.Queen[currentLocation])
         {
             foreach (Location location in locationLine)
             {
                 Square targetSquare = board.GetSquare(location);
 
-                if (targetSquare.PieceId == null)
+                if (targetSquare.PieceId == ChessDictionary.NoneId)
                 {
                     yield return new Move(currentLocation, location, pieceId, MovePriority.Default);
                 }
                 else
                 {
-                    if (ChessDictionary.GetColorByPieceId(targetSquare.PieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
+                    if (ChessDictionary.GetColorByPieceId(targetSquare.PieceId) != ChessDictionary.GetColorByPieceId(pieceId))
                     {
                         yield return new Move(currentLocation, location, pieceId, MovePriority.PieceCapture);
                     }
@@ -84,21 +80,19 @@ public static class MoveHelper
 
     private static IEnumerable<Move> GetRookValidMovements(byte pieceId, Location currentLocation, Board board)
     {
-        Location[][] locationLines = AllPossibleMoves.Rook[currentLocation];
-
-        foreach (Location[] line in locationLines)
+        foreach (Location[] line in AllPossibleMoves.Rook[currentLocation])
         {
             foreach (Location newLocation in line)
             {
                 Square targetSquare = board.GetSquare(newLocation);
 
-                if (targetSquare.PieceId == null)
+                if (targetSquare.PieceId == ChessDictionary.NoneId)
                 {
                     yield return new Move(currentLocation, newLocation, pieceId, MovePriority.Default);
                 }
                 else
                 {
-                    if (ChessDictionary.GetColorByPieceId(targetSquare.PieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
+                    if (ChessDictionary.GetColorByPieceId(targetSquare.PieceId) != ChessDictionary.GetColorByPieceId(pieceId))
                     {
                         yield return new Move(currentLocation, newLocation, pieceId, MovePriority.PieceCapture);
                     }
@@ -110,17 +104,15 @@ public static class MoveHelper
         }
     }
 
-    public static IEnumerable<Move> GetKingValidMovements(byte pieceId, Location currentLocation, Board board)
+    private static IEnumerable<Move> GetKingValidMovements(byte pieceId, Location currentLocation, Board board)
     {
-        Location[][] locationLines = AllPossibleMoves.King[currentLocation];
-
-        foreach (Location[] line in locationLines)
+        foreach (Location[] line in AllPossibleMoves.King[currentLocation])
         {
             foreach (Location newLocation in line)
             {
                 Square targetSquare = board.GetSquare(newLocation);
 
-                if (targetSquare.PieceId == null || ChessDictionary.GetColorByPieceId(targetSquare.PieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
+                if (targetSquare.PieceId == ChessDictionary.NoneId || ChessDictionary.GetColorByPieceId(targetSquare.PieceId) != ChessDictionary.GetColorByPieceId(pieceId))
                 {
                     yield return new Move(currentLocation, newLocation, pieceId, MovePriority.KingMove);
                 }
@@ -128,25 +120,23 @@ public static class MoveHelper
         }
     }
 
-    public static IEnumerable<Move> GetKnightValidMovements(byte pieceId, Location currentLocation, Board board)
+    private static IEnumerable<Move> GetKnightValidMovements(byte pieceId, Location currentLocation, Board board)
     {
-        Location[][] locationLines = AllPossibleMoves.Knight[currentLocation];
-
-        foreach (Location[] locationLine in locationLines)
+        foreach (Location[] locationLine in AllPossibleMoves.Knight[currentLocation])
         {
             foreach (Location newLocation in locationLine)
             {
                 Square targetSquare = board.GetSquare(newLocation);
 
-                if (targetSquare.PieceId == null || ChessDictionary.GetColorByPieceId(targetSquare.PieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
+                if (targetSquare.PieceId == ChessDictionary.NoneId || ChessDictionary.GetColorByPieceId(targetSquare.PieceId) != ChessDictionary.GetColorByPieceId(pieceId))
                 {
-                    yield return new Move(currentLocation, newLocation, pieceId, targetSquare.PieceId == null ? MovePriority.Default : MovePriority.PieceCapture);
+                    yield return new Move(currentLocation, newLocation, pieceId, targetSquare.PieceId == ChessDictionary.NoneId ? MovePriority.Default : MovePriority.PieceCapture);
                 }
             }
         }
     }
 
-    public static IEnumerable<Move> GetPawnValidMovements(byte pieceId, Location currentLocation, Board board)
+    private static IEnumerable<Move> GetPawnValidMovements(byte pieceId, Location currentLocation, Board board)
     {
         // Determine the direction of movement based on the color of the pawn
         int direction = ChessDictionary.GetColorByPieceId(pieceId) == PieceColor.White ? 1 : -1;
@@ -154,7 +144,7 @@ public static class MoveHelper
         // Check the square directly in front of the pawn
         Location frontLocation = new Location(currentLocation.X, (byte)(currentLocation.Y + direction));
 
-        if (Board.IsLocationOnBoard(frontLocation) && board.GetSquare(frontLocation).PieceId == null)
+        if (Board.IsLocationOnBoard(frontLocation) && board.GetSquare(frontLocation).PieceId == ChessDictionary.NoneId)
         {
             yield return new Move(currentLocation, frontLocation, pieceId, 0);
 
@@ -163,7 +153,7 @@ public static class MoveHelper
             {
                 Location twoStepsAheadLocation = new Location(currentLocation.X, (byte)(currentLocation.Y + 2 * direction));
 
-                if (Board.IsLocationOnBoard(twoStepsAheadLocation) && board.GetSquare(twoStepsAheadLocation).PieceId == null)
+                if (Board.IsLocationOnBoard(twoStepsAheadLocation) && board.GetSquare(twoStepsAheadLocation).PieceId == ChessDictionary.NoneId)
                 {
                     yield return new Move(currentLocation, frontLocation, pieceId, MovePriority.Default);
                 }
@@ -177,7 +167,7 @@ public static class MoveHelper
         {
             byte? targetPieceId = board.GetSquare(leftDiagonalLocation).PieceId;
 
-            if (targetPieceId != null && ChessDictionary.GetColorByPieceId(targetPieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
+            if (targetPieceId != ChessDictionary.NoneId && ChessDictionary.GetColorByPieceId(targetPieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
             {
                 yield return new Move(currentLocation, frontLocation, pieceId, MovePriority.PieceCapture);
             }
@@ -187,7 +177,7 @@ public static class MoveHelper
         {
             byte? targetPieceId = board.GetSquare(rightDiagonalLocation).PieceId;
 
-            if (targetPieceId != null && ChessDictionary.GetColorByPieceId(targetPieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
+            if (targetPieceId != ChessDictionary.NoneId && ChessDictionary.GetColorByPieceId(targetPieceId.Value) != ChessDictionary.GetColorByPieceId(pieceId))
             {
                 yield return new Move(currentLocation, frontLocation, pieceId, MovePriority.PieceCapture);
             }
